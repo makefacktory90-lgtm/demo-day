@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI MINDSET DEMO DAY</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #000000;
+            --text: #FFFFFF;
+            --gray-dim: #333333;
+            --gray-mid: #666666;
+            --gray-light: #999999;
+            --accent: #FFFFFF;
+            --font-heading: 'Inter', 'Helvetica Neue', sans-serif;
+            --font-mono: 'Roboto Mono', monospace;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font-heading);
+            overflow-x: hidden;
+            cursor: crosshair;
+        }
+
+        /* ── SCANLINES ── */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(255,255,255,0.015) 2px,
+                rgba(255,255,255,0.015) 4px
+            );
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* ── GRID BG ── */
+        .grid-bg {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── TOP BAR ── */
+        .top-bar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 36px;
+            background: rgba(0,0,0,0.9);
+            border-bottom: 1px solid var(--gray-dim);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            color: var(--gray-mid);
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .top-bar .status {
+            display: flex;
+            gap: 20px;
+        }
+
+        .top-bar .pulse {
+            display: inline-block;
+            width: 6px; height: 6px;
+            background: #fff;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+        }
+
+        /* ── HERO ── */
+        .hero {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 120px 40px 80px;
+            text-align: center;
+        }
+
+        .hero-label {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: 0.4em;
+            color: var(--gray-mid);
+            margin-bottom: 40px;
+            opacity: 0;
+            animation: fadeUp 1s ease 0.3s forwards;
+        }
+
+        .hero h1 {
+            font-size: clamp(48px, 10vw, 120px);
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            line-height: 0.95;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: fadeUp 1s ease 0.6s forwards;
+        }
+
+        .hero h1 .thin {
+            font-weight: 300;
+            display: block;
+            font-size: 0.5em;
+            letter-spacing: 0.15em;
+            margin-top: 10px;
+        }
+
+        .hero-sub {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            letter-spacing: 0.3em;
+            color: var(--gray-light);
+            margin-top: 40px;
+            opacity: 0;
+            animation: fadeUp 1s ease 0.9s forwards;
+        }
+
+        .divider-line {
+            width: 1px;
+            height: 80px;
+            background: linear-gradient(to bottom, transparent, var(--gray-mid), transparent);
+            margin: 0 auto;
+            opacity: 0;
+            animation: fadeUp 1s ease 1.2s forwards;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── SECTION ── */
+        section {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 80px 40px;
+        }
+
+        .section-label {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.4em;
+            color: var(--gray-mid);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .section-title {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            text-transform: uppercase;
+            margin-bottom: 40px;
+        }
+
+        /* ── CARDS ── */
+        .cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px;
+            margin-bottom: 80px;
+        }
+
+        .card {
+            border: 1px solid var(--gray-dim);
+            padding: 40px 32px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            color: var(--text);
+            display: block;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+            z-index: 0;
+        }
+
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card:hover {
+            color: #000;
+        }
+
+        .card:hover .card-label {
+            color: #666;
+        }
+
+        .card-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-label {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.3em;
+            color: var(--gray-mid);
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+
+        .card-title {
+            font-size: 22px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            letter-spacing: 0.02em;
+        }
+
+        .card-desc {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--gray-light);
+            letter-spacing: 0.05em;
+            line-height: 1.6;
+            transition: color 0.3s ease;
+        }
+
+        .card:hover .card-desc {
+            color: #444;
+        }
+
+        .card-arrow {
+            font-size: 24px;
+            margin-top: 24px;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover .card-arrow {
+            transform: translateX(8px);
+        }
+
+        /* ── FLOW ── */
+        .flow-section {
+            padding: 80px 40px 120px;
+        }
+
+        .flow-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .flow {
+            position: relative;
+            padding-left: 40px;
+        }
+
+        .flow::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: linear-gradient(to bottom, transparent, var(--gray-mid) 10%, var(--gray-mid) 90%, transparent);
+        }
+
+        .flow-step {
+            position: relative;
+            margin-bottom: 48px;
+            opacity: 0;
+            transform: translateX(-10px);
+        }
+
+        .flow-step.visible {
+            animation: slideIn 0.6s ease forwards;
+        }
+
+        @keyframes slideIn {
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .flow-step::before {
+            content: '';
+            position: absolute;
+            left: -44px;
+            top: 8px;
+            width: 9px;
+            height: 9px;
+            border: 1px solid var(--gray-mid);
+            background: var(--bg);
+            transition: all 0.3s ease;
+        }
+
+        .flow-step:hover::before {
+            background: #fff;
+            border-color: #fff;
+            box-shadow: 0 0 12px rgba(255,255,255,0.4);
+        }
+
+        .flow-num {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.3em;
+            color: var(--gray-mid);
+            margin-bottom: 6px;
+        }
+
+        .flow-title {
+            font-size: 18px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+        }
+
+        .flow-desc {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--gray-light);
+            letter-spacing: 0.03em;
+            line-height: 1.7;
+        }
+
+        /* ── SIGNATURE ── */
+        .signature {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 80px 40px 40px;
+            border-top: 1px solid var(--gray-dim);
+        }
+
+        .sig-name {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .sig-handle {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            color: var(--gray-mid);
+        }
+
+        /* ── FOOTER ── */
+        .footer {
+            position: relative;
+            z-index: 1;
+            border-top: 1px solid var(--gray-dim);
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            color: var(--gray-dim);
+        }
+
+        .footer .blink {
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        /* ── GLITCH ── */
+        .glitch {
+            position: relative;
+        }
+
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .glitch::before {
+            animation: glitch1 3s infinite linear;
+            clip-path: inset(0 0 80% 0);
+            color: rgba(255,255,255,0.8);
+        }
+
+        .glitch::after {
+            animation: glitch2 3s infinite linear;
+            clip-path: inset(80% 0 0 0);
+            color: rgba(255,255,255,0.8);
+        }
+
+        @keyframes glitch1 {
+            0%, 90%, 100% { transform: translate(0); }
+            92% { transform: translate(-2px, 1px); }
+            94% { transform: translate(2px, -1px); }
+            96% { transform: translate(-1px, 2px); }
+        }
+
+        @keyframes glitch2 {
+            0%, 88%, 100% { transform: translate(0); }
+            90% { transform: translate(2px, -1px); }
+            93% { transform: translate(-2px, 1px); }
+            95% { transform: translate(1px, -2px); }
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 700px) {
+            .cards { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 42px; }
+            section, .flow-section { padding: 60px 24px; }
+            .top-bar { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="grid-bg"></div>
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <div class="status">
+            <span><span class="pulse"></span>SYSTEM ACTIVE</span>
+            <span>PROTOCOL // DEMO_DAY</span>
+        </div>
+        <div>IRA&AI // 2026</div>
+    </div>
+
+    <!-- HERO -->
+    <div class="hero">
+        <div class="hero-label">IRA & AI // LIVE DEMO // FEB 2026</div>
+        <h1>
+            <span class="glitch" data-text="AI MINDSET">AI MINDSET</span>
+            <span class="thin">DEMO DAY</span>
+        </h1>
+        <div class="hero-sub">САЙТ &nbsp;·&nbsp; ИНТЕРАКТИВНЫЕ УРОКИ &nbsp;·&nbsp; АВТОКУРС</div>
+    </div>
+
+    <div class="divider-line"></div>
+
+    <!-- WHAT I BUILT -->
+    <section>
+        <div class="section-label">01 // РЕЗУЛЬТАТ</div>
+        <div class="section-title">Что я построила</div>
+
+        <div class="cards">
+            <a href="https://iraai.ru/" target="_blank" class="card">
+                <div class="card-content">
+                    <div class="card-label">Сайт</div>
+                    <div class="card-title">iraai.ru</div>
+                    <div class="card-desc">Персональный сайт с интерактивными<br>видеоуроками мировых спикеров</div>
+                    <span class="card-arrow">→</span>
+                </div>
+            </a>
+
+            <a href="https://makefacktory90-lgtm.github.io/lazy-carousel/" target="_blank" class="card">
+                <div class="card-content">
+                    <div class="card-label">Автокурс</div>
+                    <div class="card-title">Карусели с AI</div>
+                    <div class="card-desc">Курс, который продаёт себя сам.<br>Воронка + бот + автодоставка</div>
+                    <span class="card-arrow">→</span>
+                </div>
+            </a>
+        </div>
+    </section>
+
+    <!-- FLOW -->
+    <section class="flow-section">
+        <div class="flow-container">
+            <div class="section-label">02 // ПРОЦЕСС</div>
+            <div class="section-title">Как это работает</div>
+
+            <div class="flow">
+                <div class="flow-step">
+                    <div class="flow-num">STEP 01</div>
+                    <div class="flow-title">Идея → Промт</div>
+                    <div class="flow-desc">Формулирую задачу. Один промт запускает всю цепочку</div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="flow-num">STEP 02</div>
+                    <div class="flow-title">Цепочка агентов</div>
+                    <div class="flow-desc">Внутри Claude работает команда: исследователь, редактор, критик, дизайнер. Каждый агент отвечает за свой кусок</div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="flow-num">STEP 03</div>
+                    <div class="flow-title">Партнёрство с контентом</div>
+                    <div class="flow-desc">Текст проходит через 4 агентов — проверка, усиление, деайфикация, инъекция голоса. Результат: текст, который не пахнет AI</div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="flow-num">STEP 04</div>
+                    <div class="flow-title">Скиллы и шаблоны</div>
+                    <div class="flow-desc">Визуальные стили, структуры, правила — всё зашито в систему. Один раз настроила, теперь просто запускаю</div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="flow-num">STEP 05</div>
+                    <div class="flow-title">Деплой</div>
+                    <div class="flow-desc">Одна команда — и сайт, курс, урок, пост живут в интернете. Без разработчика. Без дизайнера</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SIGNATURE -->
+    <div class="signature">
+        <div class="sig-name">IRA BUYAN</div>
+        <div class="sig-handle">@IRA.AND.AI</div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <div>MADE BY IRA & AI<span class="blink">_</span></div>
+        <div>AI MINDSET DEMO DAY // 2026</div>
+    </div>
+
+    <script>
+        // Intersection Observer for flow steps
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, i) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.classList.add('visible');
+                    }, i * 150);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.2 });
+
+        document.querySelectorAll('.flow-step').forEach(step => {
+            observer.observe(step);
+        });
+    </script>
+
+</body>
+</html>
