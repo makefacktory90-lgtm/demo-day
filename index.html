@@ -308,12 +308,19 @@
         .flow-step {
             position: relative;
             margin-bottom: 48px;
+            opacity: 1;
+            transform: translateX(0);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .flow-step.hidden {
             opacity: 0;
             transform: translateX(-10px);
         }
 
         .flow-step.visible {
-            animation: slideIn 0.6s ease forwards;
+            opacity: 1;
+            transform: translateX(0);
         }
 
         @keyframes slideIn {
@@ -563,21 +570,28 @@
     </div>
 
     <script>
-        // Intersection Observer for flow steps
+        // Hide steps initially, then animate on scroll
+        document.querySelectorAll('.flow-step').forEach(step => {
+            step.classList.add('hidden');
+        });
+
         const observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry, i) => {
+            entries.forEach((entry) => {
                 if (entry.isIntersecting) {
-                    setTimeout(() => {
-                        entry.target.classList.add('visible');
-                    }, i * 150);
+                    const steps = document.querySelectorAll('.flow-step');
+                    steps.forEach((step, i) => {
+                        setTimeout(() => {
+                            step.classList.remove('hidden');
+                            step.classList.add('visible');
+                        }, i * 150);
+                    });
                     observer.unobserve(entry.target);
                 }
             });
-        }, { threshold: 0.2 });
+        }, { threshold: 0.1 });
 
-        document.querySelectorAll('.flow-step').forEach(step => {
-            observer.observe(step);
-        });
+        const flowSection = document.querySelector('.flow');
+        if (flowSection) observer.observe(flowSection);
     </script>
 
 </body>
